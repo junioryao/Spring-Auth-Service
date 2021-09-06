@@ -7,13 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
-
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest
 class UserControlerTest {
@@ -25,29 +20,7 @@ class UserControlerTest {
 
   @Test
   @DisplayName("is not Unauthorized => Authentication failed or not define ")
-  void getAUserDetails() throws Exception {
-    when(userServiceImplementation.getUser("junior")).thenReturn(DAOutils.getUserDTO());
-    mockMvc
-        .perform(get("/v2/user/").contentType(MediaType.APPLICATION_JSON).param("name", "junior"))
-        .andExpect(status().isUnauthorized());
-    verify(userServiceImplementation, times(0)).getUser("junior");
-  }
-  /*
-
-    @Test
-    void getAUserDetails() throws Exception {
-      System.out.println(DAOutils.getUserDTO());
-
-      when(userServiceImplementation.getUser("junior")).thenReturn(DAOutils.getUserDTO());
-      mockMvc
-          .perform(get("/v2/user/").contentType(MediaType.APPLICATION_JSON).param("name", "junior"))
-          .andExpect(status().isUnauthorized())
-          .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-          .andExpect(content().json(gson.toJson(DAOutils.getUserDTO())));
-
-      verify(userServiceImplementation.getUser("junior"), times(1));
-    }
-  */
+  void getAUserDetails() {}
 
   @Test
   void getAllUserDetails() {}

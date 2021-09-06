@@ -1,5 +1,8 @@
 package com.example.authentificationservice.security;
 
+import com.example.authentificationservice.security.JWT.JWTConfig;
+import com.example.authentificationservice.security.filter.AuthenticationsFilter;
+import com.example.authentificationservice.security.filter.AuthorizationTokenFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +22,7 @@ public class securityConfig extends WebSecurityConfigurerAdapter {
 
   private final PasswordEncoder passwordEncoder;
   private final UserDetailsService userDetailsService;
+  private final JWTConfig jwtConfig;
 
   @Override
   protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -33,10 +37,10 @@ public class securityConfig extends WebSecurityConfigurerAdapter {
     http.authorizeRequests().mvcMatchers("/login/**").permitAll();
     http.authorizeRequests().anyRequest().authenticated();
     // add our auth filter
-    http.addFilter(new AuthenticationsFilter(authenticationManagerBean()));
+    http.addFilter(new AuthenticationsFilter(authenticationManagerBean(), jwtConfig));
     // authorization filter => verify the JWT token provided
-    http.addFilterBefore(new AuthorizationTokenFilter(), UsernamePasswordAuthenticationFilter.class);
-
+    http.addFilterBefore(
+        new AuthorizationTokenFilter(jwtConfig), UsernamePasswordAuthenticationFilter.class);
     // login filter => provide JWT token during connection
 
   }

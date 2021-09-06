@@ -1,14 +1,12 @@
-package com.example.authentificationservice.security;
+package com.example.authentificationservice.security.filter;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
+import com.example.authentificationservice.security.JWT.JWTConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -17,13 +15,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Date;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
 public class AuthenticationsFilter extends UsernamePasswordAuthenticationFilter {
   private final AuthenticationManager authenticationManager;
+  private final JWTConfig jwtConfig;
 
   @Override
   public Authentication attemptAuthentication(
@@ -46,28 +43,11 @@ public class AuthenticationsFilter extends UsernamePasswordAuthenticationFilter 
       FilterChain chain,
       Authentication authResult)
       throws IOException, ServletException {
-
     // what to do when the user is authenticated => generate is JWT
-
     // select the user which came from user details service
     User loggingUser = (User) authResult.getPrincipal();
-
-    // generate the Json Token
-    Algorithm algorithm = Algorithm.HMAC256("junioryao".getBytes());
-    String accessToken =
-        JWT.create()
-            .withSubject(loggingUser.getUsername())
-            .withExpiresAt(new Date(System.currentTimeMillis() + (10 * 60 * 1000)))
-            .withArrayClaim(
-                "role",
-                loggingUser.getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.toList())
-                    .toArray(String[]::new))
-            .sign(algorithm);
-
+    String accessToken = jwtConfig.getAccessToken(loggingUser);
     // return to the user the JWT => by setting an header
-
     response.setHeader("accessToken", accessToken);
     log.info("user is log successfully");
     // super.successfulAuthentication(request, response, chain, authResult);
