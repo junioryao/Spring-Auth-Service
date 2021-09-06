@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RestController
@@ -49,5 +51,11 @@ public class UserControler {
 
     log.info(userDto.toString());
     return ResponseEntity.ok(userServiceImplementation.saveUser(userDto));
+  }
+
+  @GetMapping("/refreshToken")
+  public void refreshUserToken(HttpServletRequest request, HttpServletResponse response)
+      throws Exception {
+    userServiceImplementation.refreshUserToken(request, response);
   }
 }

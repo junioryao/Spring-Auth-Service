@@ -4,6 +4,8 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.example.authentificationservice.service.UserServiceImplementation;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,8 +21,8 @@ import java.util.stream.Collectors;
 
 @Component
 @Slf4j
-public class JWTConfig {
-
+@RequiredArgsConstructor
+public class JWTProcess {
   private final String tokenSecret = "juniorYao";
 
   private final Algorithm algorithm = Algorithm.HMAC256(tokenSecret.getBytes());
@@ -32,6 +34,20 @@ public class JWTConfig {
     return JWT.create()
         .withSubject(loggingUser.getUsername())
         .withExpiresAt(new Date(System.currentTimeMillis() + (10 * 60 * 1000)))
+        .withArrayClaim(
+            "role",
+            loggingUser.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList())
+                .toArray(String[]::new))
+        .sign(this.algorithm);
+  }
+
+  public String getAccessToken(User loggingUser, long timeMinute) {
+
+    return JWT.create()
+        .withSubject(loggingUser.getUsername())
+        .withExpiresAt(new Date(System.currentTimeMillis() + (timeMinute * 60 * 1000)))
         .withArrayClaim(
             "role",
             loggingUser.getAuthorities().stream()
@@ -58,5 +74,13 @@ public class JWTConfig {
     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
         new UsernamePasswordAuthenticationToken(jwt.getSubject(), null, authorityList);
     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+  }
+
+  public String refreshJWTToken(String token, UserServiceImplementation userServiceImplementation) {
+    DecodedJWT jwt = JWT.decode(token);
+    // get userDetail based on userName
+    var userDetail = userServiceImplementation.loadUserByUsername(jwt.getSubject());
+    log.info(userDetail.toString());
+    return getAccessToken((User) userDetail, 30);
   }
 }

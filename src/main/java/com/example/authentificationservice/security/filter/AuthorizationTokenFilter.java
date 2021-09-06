@@ -1,7 +1,7 @@
 package com.example.authentificationservice.security.filter;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.example.authentificationservice.security.JWT.JWTConfig;
+import com.example.authentificationservice.security.JWT.JWTProcess;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -17,7 +17,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @Slf4j
 @RequiredArgsConstructor
 public class AuthorizationTokenFilter extends OncePerRequestFilter {
-  private final JWTConfig jwtConfig;
+  private final JWTProcess jwtProcess;
 
   @Override
   protected void doFilterInternal(
@@ -25,7 +25,8 @@ public class AuthorizationTokenFilter extends OncePerRequestFilter {
       throws ServletException, IOException {
     // if it is login let it pass
     log.info("filter authorization ");
-    if (request.getServletPath().equals("/login")) {
+    if (request.getServletPath().equals("/login")
+        || request.getServletPath().equals("/v2/user/refreshToken")) {
       // do nothing => pass to the next filter
       filterChain.doFilter(request, response);
     } else {
@@ -33,7 +34,7 @@ public class AuthorizationTokenFilter extends OncePerRequestFilter {
       if (authorizationHeader != null && authorizationHeader.startsWith("Bearer")) {
         try {
           String TOKEN = authorizationHeader.split(" ")[1];
-          jwtConfig.verifyAccessToken(TOKEN);
+          jwtProcess.verifyAccessToken(TOKEN);
           filterChain.doFilter(request, response);
         } catch (JWTVerificationException exception) {
           // Invalid signature/claims

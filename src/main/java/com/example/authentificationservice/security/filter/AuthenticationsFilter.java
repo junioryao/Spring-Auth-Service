@@ -1,6 +1,6 @@
 package com.example.authentificationservice.security.filter;
 
-import com.example.authentificationservice.security.JWT.JWTConfig;
+import com.example.authentificationservice.security.JWT.JWTProcess;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,7 +20,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class AuthenticationsFilter extends UsernamePasswordAuthenticationFilter {
   private final AuthenticationManager authenticationManager;
-  private final JWTConfig jwtConfig;
+  private final JWTProcess jwtProcess;
 
   @Override
   public Authentication attemptAuthentication(
@@ -46,7 +46,7 @@ public class AuthenticationsFilter extends UsernamePasswordAuthenticationFilter 
     // what to do when the user is authenticated => generate is JWT
     // select the user which came from user details service
     User loggingUser = (User) authResult.getPrincipal();
-    String accessToken = jwtConfig.getAccessToken(loggingUser);
+    String accessToken = jwtProcess.getAccessToken(loggingUser);
     // return to the user the JWT => by setting an header
     response.setHeader("accessToken", accessToken);
     log.info("user is log successfully");

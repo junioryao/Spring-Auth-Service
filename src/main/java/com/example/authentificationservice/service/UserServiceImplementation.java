@@ -7,6 +7,7 @@ import com.example.authentificationservice.model.User;
 import com.example.authentificationservice.model.UserRole;
 import com.example.authentificationservice.repository.RoleRepository;
 import com.example.authentificationservice.repository.UserRepository;
+import com.example.authentificationservice.security.JWT.JWTProcess;
 import com.example.authentificationservice.service.interfaceService.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,16 +20,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserServiceImplementation implements UserService, UserDetailsService {
-
+  private final JWTProcess jwtProcess;
   private final UserRepository userRepository;
   private final RoleRepository roleRepository;
   private final ModelMapper modelMapper;
@@ -62,6 +67,21 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
   public List<UserDto> getUsers() {
     log.info("get all users");
     return modelMapper.map(userRepository.findAll(), (Type) UserDto.class);
+  }
+
+  @Override
+  public void refreshUserToken(HttpServletRequest request, HttpServletResponse response)
+      throws Exception {
+    String authorizationHeader = request.getHeader(AUTHORIZATION);
+    if (authorizationHeader != null && authorizationHeader.startsWith("Bearer")) {
+      try {
+        String TOKEN = authorizationHeader.split(" ")[1];
+        String newAccessToken = jwtProcess.refreshJWTToken(TOKEN, this);
+        response.setHeader("accessToken", newAccessToken);
+      } catch (Exception e) {
+        throw new Exception(e.getMessage());
+      }
+    }
   }
 
   @Override
