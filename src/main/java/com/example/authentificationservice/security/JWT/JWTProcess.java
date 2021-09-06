@@ -29,25 +29,13 @@ public class JWTProcess {
 
   private final JWTVerifier verifier = JWT.require(algorithm).build();
 
-  public String getAccessToken(User loggingUser) {
+
+
+  public String getAccessToken(User loggingUser, long additionalTime) {
 
     return JWT.create()
         .withSubject(loggingUser.getUsername())
-        .withExpiresAt(new Date(System.currentTimeMillis() + (10 * 60 * 1000)))
-        .withArrayClaim(
-            "role",
-            loggingUser.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList())
-                .toArray(String[]::new))
-        .sign(this.algorithm);
-  }
-
-  public String getAccessToken(User loggingUser, long timeMinute) {
-
-    return JWT.create()
-        .withSubject(loggingUser.getUsername())
-        .withExpiresAt(new Date(System.currentTimeMillis() + (timeMinute * 60 * 1000)))
+        .withExpiresAt(new Date(System.currentTimeMillis() + (additionalTime)))
         .withArrayClaim(
             "role",
             loggingUser.getAuthorities().stream()
@@ -76,11 +64,11 @@ public class JWTProcess {
     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
   }
 
-  public String refreshJWTToken(String token, UserServiceImplementation userServiceImplementation) {
+  public String refreshJWTToken(String token, UserServiceImplementation implementation) {
     DecodedJWT jwt = JWT.decode(token);
     // get userDetail based on userName
-    var userDetail = userServiceImplementation.loadUserByUsername(jwt.getSubject());
+    var userDetail = implementation.loadUserByUsername(jwt.getSubject());
     log.info(userDetail.toString());
-    return getAccessToken((User) userDetail, 30);
+    return getAccessToken((User) userDetail, (30 * 60 * 1000));
   }
 }

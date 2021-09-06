@@ -46,7 +46,7 @@ public class AuthenticationsFilter extends UsernamePasswordAuthenticationFilter 
     // what to do when the user is authenticated => generate is JWT
     // select the user which came from user details service
     User loggingUser = (User) authResult.getPrincipal();
-    String accessToken = jwtProcess.getAccessToken(loggingUser);
+    String accessToken = jwtProcess.getAccessToken(loggingUser, (10 * 60 * 1000));
     // return to the user the JWT => by setting an header
     response.setHeader("accessToken", accessToken);
     log.info("user is log successfully");
